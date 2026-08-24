@@ -1,3 +1,9 @@
+import orchestrator from "tests/orchestrator.js"
+
+beforeAll(async () => {
+    await orchestrator.waitForAllServices()
+})
+
 test("GET /api/v1/status returns 200 and the updated_at on format ISO8601", async () => {
     const response = await fetch("http://localhost:3000/api/v1/status")
     expect(response.status).toBe(200)
