@@ -1,7 +1,8 @@
 import useSWR from "swr";
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
 async function fetchAPI(key) {
-  const response = await fetch(`http://localhost:3000${key}`);
+  const response = await fetch(`${baseUrl}${key}`);
   const responseBody = await response.json();
   return responseBody;
 }
