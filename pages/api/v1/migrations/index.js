@@ -1,46 +1,71 @@
+import { createRouter } from "next-connect";
 import migrationRunner from "node-pg-migrate";
 import { resolve } from "node:path";
 import database from "infra/database.js";
+import { InternalServerError, MethodNotAllowedError } from "infra/errors.js";
 
-export default async function migrationsHandler(req, res) {
-  const allowedMethods = ["GET", "POST"];
-  if (!allowedMethods.includes(req.method)) {
-    return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
-  }
+const router = createRouter();
 
-  let dbClient;
+router.get(getMigrationsHandler);
+router.post(postMigrationsHandler);
 
+export default router.handler({
+  onNoMatch: onNoMatchHandler,
+  onError: onErrorHandler,
+});
+
+function onNoMatchHandler(_, res) {
+  const publicErrorObject = new MethodNotAllowedError();
+  res.status(publicErrorObject.status_code).json(publicErrorObject);
+}
+
+function onErrorHandler(error, _, res) {
+  const publicErrorObject = new InternalServerError({
+    cause: error,
+  });
+
+  console.log("\n Erro dentro do catch do next-connect");
+  console.error(publicErrorObject);
+
+  res.status(500).json(publicErrorObject);
+}
+
+async function getMigrationsHandler(req, res) {
   try {
-    dbClient = await database.getNewClient();
-    const defaultMigrationOption = {
-      dbClient,
-      databaseUrl: process.env.DATABASE_URL,
-      dryRun: true,
-      dir: resolve("infra", "migrations"),
-      direction: "up",
-      verbose: true,
-      migrationsTable: "pgmigrations",
-    };
-
-    if (req.method === "GET") {
-      const pendingMigrations = await migrationRunner(defaultMigrationOption);
-      return res.status(200).json(pendingMigrations);
-    }
-
-    if (req.method === "POST") {
-      const migratedMigrations = await migrationRunner({
-        ...defaultMigrationOption,
-        dryRun: false,
-      });
-      if (migratedMigrations.length > 0) {
-        return res.status(201).json(migratedMigrations);
-      }
-      return res.status(200).json(migratedMigrations);
-    }
+    const { defaultMigrationOption } = await dbClient();
+    const pendingMigrations = await migrationRunner(defaultMigrationOption);
+    return res.status(200).json(pendingMigrations);
   } catch (error) {
     console.error(error);
     throw error;
   } finally {
     await dbClient.end();
   }
+}
+
+async function postMigrationsHandler(req, res) {
+  const { defaultMigrationOption } = await dbClient();
+  const migratedMigrations = await migrationRunner({
+    ...defaultMigrationOption,
+    dryRun: false,
+  });
+  if (migratedMigrations.length > 0) {
+    return res.status(201).json(migratedMigrations);
+  }
+  return res.status(200).json(migratedMigrations);
+}
+
+async function dbClient() {
+  const dbClient = await database.getNewClient();
+  const defaultMigrationOption = {
+    dbClient,
+    databaseUrl: process.env.DATABASE_URL,
+    dryRun: true,
+    dir: resolve("infra", "migrations"),
+    direction: "up",
+    verbose: true,
+    migrationsTable: "pgmigrations",
+  };
+
+  return { defaultMigrationOption };
 }
