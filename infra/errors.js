@@ -6,7 +6,7 @@ export class InternalServerError extends Error {
 
     this.name = "InternalServerError";
     this.action = "Entre em contato com o suporte do sistema";
-    this.status_code = statusCode || 500;
+    this.statusCode = statusCode || 500;
   }
 
   toJSON() {
@@ -14,13 +14,13 @@ export class InternalServerError extends Error {
       name: this.name,
       message: this.message,
       action: this.action,
-      status_code: this.status_code,
+      status_code: this.statusCode,
     };
   }
 }
 
 export class ServiceError extends Error {
-  constructor({ cause, message, statusCode }) {
+  constructor({ cause, message }) {
     super(message || "Serviço indisponível no momento.", {
       cause,
     });
@@ -28,7 +28,7 @@ export class ServiceError extends Error {
     this.name = "ServiceError";
     this.action =
       "Verifique se o serviço está disponível e tente novamente mais tarde.";
-    this.status_code = statusCode || 503;
+    this.statusCode = 503;
   }
 
   toJSON() {
@@ -36,7 +36,7 @@ export class ServiceError extends Error {
       name: this.name,
       message: this.message,
       action: this.action,
-      status_code: this.status_code,
+      status_code: this.statusCode,
     };
   }
 }
@@ -47,7 +47,7 @@ export class MethodNotAllowedError extends Error {
 
     this.name = "MethodNotAllowedError";
     this.action = "Verifique a documentação da API para métodos permitidos.";
-    this.status_code = 405;
+    this.statusCode = 405;
   }
 
   toJSON() {
@@ -55,7 +55,7 @@ export class MethodNotAllowedError extends Error {
       name: this.name,
       message: this.message,
       action: this.action,
-      status_code: this.status_code,
+      status_code: this.statusCode,
     };
   }
 }

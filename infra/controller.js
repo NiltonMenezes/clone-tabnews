@@ -13,7 +13,7 @@ function onErrorHandler(error, _, res) {
 
   console.error(publicErrorObject);
 
-  res.status(publicErrorObject.status_code).json(publicErrorObject);
+  res.status(publicErrorObject.statusCode).json(publicErrorObject);
 }
 
 const controller = {

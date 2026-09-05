@@ -12,8 +12,9 @@ router.post(postHandler);
 export default router.handler(controller.errorHandlers);
 
 async function getHandler(req, res) {
-  const dbClient = await database.getNewClient();
+  let dbClient;
   try {
+    dbClient = await database.getNewClient();
     const { defaultMigrationOption } = await migrationsOptions();
     const pendingMigrations = await migrationRunner({
       ...defaultMigrationOption,
@@ -26,8 +27,9 @@ async function getHandler(req, res) {
 }
 
 async function postHandler(req, res) {
-  const dbClient = await database.getNewClient();
+  let dbClient;
   try {
+    dbClient = await database.getNewClient();
     const { defaultMigrationOption } = await migrationsOptions();
     const migratedMigrations = await migrationRunner({
       ...defaultMigrationOption,
