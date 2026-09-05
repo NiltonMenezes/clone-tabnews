@@ -1,5 +1,5 @@
 import { Client } from "pg";
-import { ServiceError } from "infra/errors.js";
+import { ServiceError } from "./errors.js";
 
 async function query(queryObject) {
   let client;
@@ -12,7 +12,7 @@ async function query(queryObject) {
     const serviceErrorObject = new ServiceError({
       message: "Erro na conexão com o banco ou na query.",
       cause: error,
-      statusCode: error.statusCode,
+      statusCode: 503,
     });
     throw serviceErrorObject;
   } finally {
