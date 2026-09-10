@@ -10,6 +10,6 @@ export default router.handler(controller.errorHandlers);
 
 async function getHandler(req, res) {
   const { username } = req.query;
-  const userFound = await user.findOneByUsername(username)
+  const userFound = await user.findOneByUsername(username);
   return res.status(200).json(userFound);
 }

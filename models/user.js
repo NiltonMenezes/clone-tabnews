@@ -2,7 +2,7 @@ import database from "infra/database.js";
 import { ValidationError, NotFoundError } from "infra/errors.js";
 
 async function findOneByUsername(username) {
-  const userFound = await runSelectQuery(username)
+  const userFound = await runSelectQuery(username);
 
   return userFound;
 
@@ -24,7 +24,7 @@ async function findOneByUsername(username) {
     if (results.rowCount === 0) {
       throw new NotFoundError({
         message: "O username informado não foi encontrado.",
-        action: "Por favor, verifique se o username informado está correto."
+        action: "Por favor, verifique se o username informado está correto.",
       });
     }
 
@@ -104,7 +104,7 @@ async function create(userInputValues) {
 
 const user = {
   create,
-  findOneByUsername
+  findOneByUsername,
 };
 
 export default user;
