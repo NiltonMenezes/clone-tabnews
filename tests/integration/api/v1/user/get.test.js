@@ -1,5 +1,6 @@
 import { version as uuidVersion } from "uuid";
 import orchestrator from "tests/orchestrator.js";
+import session from "models/session.js";
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -58,41 +59,35 @@ describe("GET /api/v1/user", () => {
         status_code: 401,
       });
     });
-    //   const user = await orchestrator.createUser();
 
-    //   const response = await fetch(
-    //     `http://localhost:3000/api/v1/users/${user.username.toLowerCase()}`,
-    //   );
+    test("With expired session", async () => {
+      jest.useFakeTimers({
+        now: new Date(Date.now() - session.EXPIRATION_IN_MILLISECONDS),
+      });
 
-    //   expect(response.status).toBe(200);
-    //   const responseBody = await response.json();
-    //   expect(responseBody).toEqual({
-    //     id: responseBody.id,
-    //     username: user.username,
-    //     email: user.email,
-    //     password: responseBody.password,
-    //     created_at: responseBody.created_at,
-    //     updated_at: responseBody.updated_at,
-    //   });
+      const createdUser = await orchestrator.createUser({
+        username: "UserWithExpiredSession",
+      });
 
-    //   expect(uuidVersion(responseBody.id)).toBe(4);
-    //   expect(Date.parse(responseBody.created_at)).not.toBeNaN();
-    //   expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
-    // });
+      const sessionObject = await orchestrator.createSession(createdUser.id);
 
-    // test("With nonexistent username", async () => {
-    //   const response = await fetch(
-    //     "http://localhost:3000/api/v1/users/UsuarioInexistente",
-    //   );
+      jest.useRealTimers();
 
-    //   expect(response.status).toBe(404);
-    //   const responseBody = await response.json();
-    //   expect(responseBody).toEqual({
-    //     name: "NotFoundError",
-    //     message: "O username informado não foi encontrado.",
-    //     action: "Por favor, verifique se o username informado está correto.",
-    //     status_code: 404,
-    //   });
-    // });
+      const response = await fetch(`http://localhost:3000/api/v1/user`, {
+        headers: {
+          Cookie: `session_id=${sessionObject.token}`,
+        },
+      });
+
+      expect(response.status).toBe(401);
+      const responseBody = await response.json();
+
+      expect(responseBody).toEqual({
+        name: "UnauthorizedError",
+        message: "Token inválido.",
+        action: "Verifique se este usuário está logado e tente novamente.",
+        status_code: 401,
+      });
+    });
   });
 });
