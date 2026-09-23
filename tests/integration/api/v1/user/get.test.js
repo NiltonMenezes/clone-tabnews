@@ -87,9 +87,22 @@ describe("GET /api/v1/user", () => {
 
       expect(responseBody).toEqual({
         name: "UnauthorizedError",
-        message: "Token inválido.",
+        message: "Usuário não possui sessão ativa.",
         action: "Verifique se este usuário está logado e tente novamente.",
         status_code: 401,
+      });
+
+      // Set-Cookie assertions
+      const parsedSetCookie = setCookieParser(response, {
+        map: true,
+      });
+
+      expect(parsedSetCookie.session_id).toEqual({
+        name: "session_id",
+        value: "invalid",
+        maxAge: -1,
+        path: "/",
+        httpOnly: true,
       });
     });
 
@@ -117,7 +130,7 @@ describe("GET /api/v1/user", () => {
 
       expect(responseBody).toEqual({
         name: "UnauthorizedError",
-        message: "Token inválido.",
+        message: "Usuário não possui sessão ativa.",
         action: "Verifique se este usuário está logado e tente novamente.",
         status_code: 401,
       });
