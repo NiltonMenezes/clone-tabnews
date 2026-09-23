@@ -15,7 +15,6 @@ describe("GET /api/v1/user", () => {
       });
 
       const sessionObject = await orchestrator.createSession(createdUser.id);
-
       const response = await fetch(`http://localhost:3000/api/v1/user`, {
         headers: {
           Cookie: `session_id=${sessionObject.token}`,
@@ -39,7 +38,26 @@ describe("GET /api/v1/user", () => {
       expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
-    // test("With case mismatch", async () => {
+    test("With nonexistent session", async () => {
+      const nonExistentToken =
+        "a667dcd68c9659697711c342d48194c6ed3b7b5dadd147e05b7007ec079f1df32b79aa35d1445ab9228c296ab3d53388";
+
+      const response = await fetch(`http://localhost:3000/api/v1/user`, {
+        headers: {
+          Cookie: `session_id=${nonExistentToken}`,
+        },
+      });
+
+      expect(response.status).toBe(401);
+      const responseBody = await response.json();
+
+      expect(responseBody).toEqual({
+        name: "UnauthorizedError",
+        message: "Token inválido.",
+        action: "Verifique se este usuário está logado e tente novamente.",
+        status_code: 401,
+      });
+    });
     //   const user = await orchestrator.createUser();
 
     //   const response = await fetch(
